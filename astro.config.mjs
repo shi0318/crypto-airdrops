@@ -3,7 +3,7 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://topcryptoairdrops.com',
+  site: 'https://cryptvews.com',
   output: 'static',
   server: {
     host: true,

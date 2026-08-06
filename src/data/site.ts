@@ -1,7 +1,7 @@
 export const SITE = {
   name: 'Top Crypto Airdrops',
   shortName: 'Top Airdrops',
-  url: 'https://topcryptoairdrops.com',
+  url: 'https://cryptvews.com',
   description: 'A clear, source-tracked directory of crypto airdrops, reward campaigns, and participation requirements.',
   themeColor: '#10161d',
   accent: '#35d4d9',

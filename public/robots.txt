@@ -4,4 +4,4 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /*?*
 
-Sitemap: https://topcryptoairdrops.com/sitemap-index.xml
+Sitemap: https://cryptvews.com/sitemap-index.xml

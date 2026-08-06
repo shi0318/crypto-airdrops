@@ -24,6 +24,23 @@ test('homepage has original metadata and crawlable local detail links', () => {
   assert.match(html, /Top Crypto Airdrops/);
 });
 
+test('site metadata uses cryptvews.com as the canonical origin', () => {
+  const homepage = read('index.html');
+  const robots = read('robots.txt');
+
+  assert.match(homepage, /<link rel="canonical" href="https:\/\/cryptvews\.com\/">/);
+  assert.match(homepage, /"url":"https:\/\/cryptvews\.com\/airdrop\/bitunix-trading-rewards\//);
+  assert.doesNotMatch(homepage, /topcryptoairdrops[.]com/);
+  assert.match(robots, /Sitemap: https:\/\/cryptvews\.com\/sitemap-index\.xml/);
+});
+
+test('contact page uses the official cryptvews.com editorial address', () => {
+  const contact = read('contact/index.html');
+
+  assert.match(contact, /mailto:editorial@cryptvews\.com/);
+  assert.doesNotMatch(contact, /editorial@topcryptoairdrops[.]com/);
+});
+
 test('homepage hero renders a data-driven chain overview', () => {
   const html = read('index.html');
   assert.match(html, /class="hero-data-visual"/);
