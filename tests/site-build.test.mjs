@@ -91,6 +91,12 @@ test('outbound links carry the nofollow policy', () => {
   assert.match(html, /Never share your private key or seed phrase/);
 });
 
+test('homepage footer identifies cryptvews.com as the site owner', () => {
+  const html = read('index.html');
+
+  assert.match(html, /class="footer-bottom"[\s\S]*cryptvews\.com\. All rights reserved\./);
+});
+
 test('category navigation exposes crawlable topic pages', () => {
   const homepage = read('index.html');
   const slugs = ['defi', 'blockchain', 'ai', 'meme', 'gaming'];
