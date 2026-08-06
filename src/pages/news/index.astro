@@ -1,0 +1,13 @@
+---
+import EditorialIndex from '../../components/EditorialIndex.astro';
+import { NEWS } from '../../data/editorial';
+---
+<EditorialIndex
+  title="Crypto Airdrop News and Directory Updates"
+  description="Dated crypto airdrop directory updates covering the current featured snapshot, testnet records, and changes readers should verify."
+  path="/news/"
+  kicker="NEWS / DATED DIRECTORY UPDATES"
+  heading="What changed in the record set, with the uncertainty included."
+  intro="These updates explain what the directory captured and what readers still need to verify. They are not token price predictions or reward promises."
+  articles={NEWS}
+/>

@@ -1,0 +1,11 @@
+---
+interface Props { page: number; totalPages: number; }
+const { page, totalPages } = Astro.props;
+const hrefFor = (value: number) => value === 1 ? '/' : `/page/${value}/`;
+const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+---
+<nav class="pagination" aria-label="Airdrop pages">
+  {page > 1 && <a href={hrefFor(page - 1)} aria-label="Previous page">← Prev</a>}
+  <div class="page-list">{pages.map((value) => <a class:list={['page-link', value === page && 'current']} href={hrefFor(value)} aria-current={value === page ? 'page' : undefined}>{value}</a>)}</div>
+  {page < totalPages && <a href={hrefFor(page + 1)} aria-label="Next page">Next →</a>}
+</nav>

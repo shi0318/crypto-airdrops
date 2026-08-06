@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { AIRDROP_CATEGORIES, getAirdropsForCategory } from '../data/categories';
+import { absoluteUrl } from '../data/site';
+
+const categories = AIRDROP_CATEGORIES.map((category) => ({
+  ...category,
+  count: getAirdropsForCategory(category.slug).length,
+}));
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Crypto Airdrop Categories',
+  description: 'Explore crypto airdrop records by project category, including DeFi, blockchain infrastructure, AI, meme, and gaming campaigns.',
+  url: absoluteUrl('/categories/'),
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: categories.map((category, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: category.name,
+      url: absoluteUrl(`/category/${category.slug}/`),
+    })),
+  },
+};
+---
+<BaseLayout title="Crypto Airdrop Categories" description="Explore crypto airdrop records by DeFi, blockchain, AI, meme, and gaming categories." path="/categories/">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)} />
+  <section class="category-hero categories-hero">
+    <div>
+      <p class="eyebrow">DIRECTORY / CATEGORIES</p>
+      <h1>Explore airdrops by category.</h1>
+      <p>Move from a broad listing to a focused research set. Categories are generated from the factual fields and campaign instructions already stored in each local record.</p>
+    </div>
+    <nav class="editorial-jump" aria-label="Category resources"><a href="/">All airdrops</a><a href="/guides/">Research guides</a><a href="/testnet/">Testnet records</a></nav>
+  </section>
+  <section class="category-directory" aria-labelledby="category-directory-title">
+    <div class="section-heading">
+      <div><p class="eyebrow">TOPIC INDEX / {String(categories.length).padStart(2, '0')}</p><h2 id="category-directory-title">Choose a research path</h2></div>
+      <p>One campaign may appear in more than one category when its captured record covers multiple products or participation paths.</p>
+    </div>
+    <div class="category-card-grid">
+      {categories.map((category, index) => <a class="category-card" href={`/category/${category.slug}/`} style={`--category-accent: ${category.accent}`}>
+        <span class="category-index">{String(index + 1).padStart(2, '0')}</span>
+        <span class="category-swatch" aria-hidden="true"></span>
+        <span class="category-card-copy"><strong>{category.name}</strong><small>{category.description}</small></span>
+        <span class="category-count"><strong>{category.count}</strong><small>records</small></span>
+      </a>)}
+    </div>
+  </section>
+</BaseLayout>

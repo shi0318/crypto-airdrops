@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TrustNotice from './TrustNotice.astro';
+import { AIRDROPS } from '../data/airdrops';
+import type { EditorialArticle } from '../data/editorial';
+import { EDITORIAL } from '../data/editorial';
+import { absoluteUrl } from '../data/site';
+import { formatDisplayDate } from '../utils/date.js';
+
+interface Props { article: EditorialArticle; }
+const { article } = Astro.props;
+const section = article.kind === 'guide' ? 'guides' : 'news';
+const path = `/${section}/${article.slug}/`;
+const relatedAirdrops = article.relatedSlugs.map((slug) => AIRDROPS.find((item) => item.slug === slug)).filter(Boolean);
+const moreReading = EDITORIAL.filter((candidate) => candidate.slug !== article.slug).slice(0, 3);
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': article.kind === 'guide' ? 'Article' : 'NewsArticle',
+  headline: article.title,
+  description: article.description,
+  datePublished: article.date,
+  dateModified: article.date,
+  mainEntityOfPage: absoluteUrl(path),
+  author: { '@type': 'Organization', name: 'Top Crypto Airdrops' },
+  publisher: { '@type': 'Organization', name: 'Top Crypto Airdrops' },
+};
+---
+<BaseLayout title={article.title} description={article.description} path={path}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)} />
+  <article class="editorial-shell">
+    <div class="breadcrumbs"><a href="/">Crypto Airdrops</a><span aria-hidden="true">/</span><a href={`/${section}/`}>{section === 'guides' ? 'Guides' : 'News'}</a><span aria-hidden="true">/</span>{article.title}</div>
+    <header class="editorial-header"><p class="eyebrow">{article.label}</p><h1>{article.title}</h1><p>{article.intro}</p><div class="article-byline"><time datetime={article.date}>Published {formatDisplayDate(article.date)}</time><span>{article.readTime}</span><span>Editorial research</span></div></header>
+    <div class="editorial-layout">
+      <div class="article-body">
+        {article.sections.map((section) => <section><h2>{section.heading}</h2>{section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}{section.bullets && <ul>{section.bullets.map((bullet) => <li>{bullet}</li>)}</ul>}</section>)}
+        <TrustNotice />
+      </div>
+      <aside class="article-sidebar">
+        <div><p class="eyebrow">Research next</p><h2>Related campaign records</h2><div class="article-link-list">{relatedAirdrops.map((item) => item && <a href={`/airdrop/${item.slug}/`}><span>{item.name}</span><small>{item.blockchain} - campaign snapshot</small></a>)}</div></div>
+        <div><p class="eyebrow">Keep reading</p><div class="article-link-list">{moreReading.map((item) => <a href={`/${item.kind === 'guide' ? 'guides' : 'news'}/${item.slug}/`}><span>{item.title}</span><small>{item.readTime}</small></a>)}</div></div>
+      </aside>
+    </div>
+  </article>
+</BaseLayout>

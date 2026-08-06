@@ -1,0 +1,81 @@
+<canvas id="ambient-particles" aria-hidden="true"></canvas>
+
+<script>
+  const canvas = document.querySelector('#ambient-particles');
+
+  if (canvas instanceof HTMLCanvasElement) {
+    const context = canvas.getContext('2d');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const colors = ['255, 52, 72', '255, 196, 61', '74, 214, 205'];
+    let particles = [];
+    let animationFrame = 0;
+    let width = 0;
+    let height = 0;
+    let pixelRatio = 1;
+
+    const createParticle = (randomY = true) => ({
+      x: Math.random() * width,
+      y: randomY ? Math.random() * height : height + 8,
+      radius: 0.7 + Math.random() * 1.6,
+      speedY: 0.08 + Math.random() * 0.2,
+      drift: (Math.random() - 0.5) * 0.12,
+      phase: Math.random() * Math.PI * 2,
+      opacity: 0.22 + Math.random() * 0.48,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    });
+
+    const resetParticles = () => {
+      const amount = reduceMotion.matches ? 14 : width < 640 ? 28 : 58;
+      particles = Array.from({ length: amount }, () => createParticle());
+    };
+
+    const resize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(width * pixelRatio);
+      canvas.height = Math.round(height * pixelRatio);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      context?.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      resetParticles();
+    };
+
+    const draw = () => {
+      if (!context) return;
+      context.clearRect(0, 0, width, height);
+
+      particles.forEach((particle) => {
+        if (!reduceMotion.matches) {
+          particle.y -= particle.speedY;
+          particle.x += particle.drift + Math.sin(particle.phase + particle.y * 0.012) * 0.04;
+        }
+
+        if (particle.y < -10 || particle.x < -10 || particle.x > width + 10) {
+          Object.assign(particle, createParticle(false));
+        }
+
+        context.beginPath();
+        context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        context.fillStyle = `rgba(${particle.color}, ${particle.opacity})`;
+        context.shadowColor = `rgba(${particle.color}, .7)`;
+        context.shadowBlur = particle.radius > 1.4 ? 9 : 4;
+        context.fill();
+      });
+
+      context.shadowBlur = 0;
+      if (!reduceMotion.matches && !document.hidden) animationFrame = requestAnimationFrame(draw);
+    };
+
+    const restart = () => {
+      cancelAnimationFrame(animationFrame);
+      draw();
+    };
+
+    resize();
+    draw();
+    window.addEventListener('resize', resize, { passive: true });
+    reduceMotion.addEventListener('change', restart);
+    document.addEventListener('visibilitychange', restart);
+  }
+</script>

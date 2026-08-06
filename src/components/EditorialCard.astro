@@ -1,0 +1,14 @@
+---
+import type { EditorialArticle } from '../data/editorial';
+import { formatDisplayDate } from '../utils/date.js';
+
+interface Props { article: EditorialArticle; }
+const { article } = Astro.props;
+const path = `/${article.kind === 'guide' ? 'guides' : 'news'}/${article.slug}/`;
+---
+<article class="editorial-card">
+  <div class="editorial-card-meta"><span>{article.label}</span><time datetime={article.date}>{formatDisplayDate(article.date)}</time></div>
+  <h3><a href={path}>{article.title}</a></h3>
+  <p>{article.description}</p>
+  <div class="editorial-card-footer"><span>{article.readTime}</span><a class="text-link" href={path}>Read article <span aria-hidden="true">-&gt;</span></a></div>
+</article>

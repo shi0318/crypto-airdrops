@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { AIRDROPS, IMPORT_META, getPage } from '../data/airdrops';
+import { SITE, absoluteUrl } from '../data/site';
+import AirdropCard from './AirdropCard.astro';
+import EditorialCard from './EditorialCard.astro';
+import Pagination from './Pagination.astro';
+import TrustNotice from './TrustNotice.astro';
+import { GUIDES, NEWS } from '../data/editorial';
+import { formatDisplayDate } from '../utils/date.js';
+import { buildAirdropPageContent } from '../data/content-rewriter.js';
+
+interface Props { page: number; path: string; }
+const { page, path } = Astro.props;
+const listing = getPage(page);
+const featuredReading = [...GUIDES.slice(0, 2), ...NEWS.slice(0, 1)];
+const chainCounts = AIRDROPS.reduce((counts, item) => counts.set(item.blockchain, (counts.get(item.blockchain) || 0) + 1), new Map<string, number>());
+const topChains = [...chainCounts.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 4)
+  .map(([name, count]) => ({ name, count, share: Math.round((count / AIRDROPS.length) * 100) }));
+const claimStepCount = AIRDROPS.reduce((total, item) => total + buildAirdropPageContent(item).claimSteps.length, 0);
+const pageLabel = page > 1 ? ` — Page ${page}` : '';
+const title = `Crypto Airdrops Directory${pageLabel}`;
+const description = page > 1
+  ? `Browse page ${page} of a source-tracked crypto airdrops directory with reward snapshots, chains, participation requirements, and review dates.`
+  : 'Browse a source-tracked crypto airdrops directory with reward snapshots, chains, participation requirements, and review dates.';
+const schema = {
+  '@context': 'https://schema.org', '@type': 'ItemList', name: title, numberOfItems: listing.items.length,
+  itemListElement: listing.items.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, url: absoluteUrl(`/airdrop/${item.slug}/`) })),
+};
+---
+<BaseLayout title={title} description={description} path={path}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)} />
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">OPEN / FEATURED / NEWEST FIRST</p>
+        <h1>Crypto airdrops, with the details left visible.</h1>
+        <p class="hero-lede">A working directory of campaign snapshots. Compare the reward language, chain, participation signals, and source date before you decide what deserves a closer look.</p>
+        <TrustNotice />
+      </div>
+      <aside class="hero-data-visual" aria-labelledby="chain-distribution-title">
+        <div class="data-visual-header">
+          <div><p class="eyebrow">DIRECTORY SIGNAL / LIVE DATA</p><h2 id="chain-distribution-title">Chain distribution</h2></div>
+          <div class="data-total"><strong>{AIRDROPS.length}</strong><span>tracked records</span></div>
+        </div>
+        <div class="chain-distribution">
+          {topChains.map((chain) => <div class="chain-row">
+            <div class="chain-label"><strong>{chain.name}</strong><span>{chain.count} records</span></div>
+            <div class="chain-track" role="img" aria-label={`${chain.name}: ${chain.count} of ${AIRDROPS.length} records`}><span style={`width: ${chain.share}%`}></span></div>
+          </div>)}
+        </div>
+        <div class="data-visual-footer"><span>Snapshot date</span><strong>{formatDisplayDate(IMPORT_META.capturedAt)}</strong></div>
+      </aside>
+    </div>
+    <div class="hero-meta" aria-label="Directory totals">
+      <div class="metric"><span>Local detail pages</span><strong>{AIRDROPS.length}</strong></div>
+      <div class="metric"><span>Rewritten claim steps</span><strong>{claimStepCount.toLocaleString('en-US')}</strong></div>
+      <div class="metric"><span>Source pages</span><strong>{IMPORT_META.pages}</strong></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-heading">
+      <div><p class="eyebrow">CAMPAIGN INDEX / {String(page).padStart(2, '0')}</p><h2>Browse the record set</h2></div>
+      <p>Each card is a local record with its own detail page. Open the record to see what is known, what is not, and where the source came from.</p>
+    </div>
+    <div class="airdrop-grid">{listing.items.map((item, index) => <AirdropCard item={item} index={(page - 1) * 24 + index + 1} />)}</div>
+    <Pagination page={listing.page} totalPages={listing.totalPages} />
+  </section>
+
+  {page === 1 && <section class="reading-band">
+    <div class="section-heading">
+      <div><p class="eyebrow">RESEARCH DESK / ORIGINAL EDITORIAL</p><h2>Guides and directory updates</h2></div>
+      <p>Use a repeatable verification workflow, then review dated notes about what changed in the current record set.</p>
+    </div>
+    <div class="editorial-card-grid">{featuredReading.map((article) => <EditorialCard article={article} />)}</div>
+    <nav class="editorial-jump home-editorial-jump" aria-label="More research sections"><a href="/guides/">All guides</a><a href="/news/">Latest news</a><a href="/testnet/">Testnet airdrops</a></nav>
+  </section>}
+</BaseLayout>

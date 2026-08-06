@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ExternalLink from '../../components/ExternalLink.astro';
+import TrustNotice from '../../components/TrustNotice.astro';
+import { AIRDROPS, formatRequirement } from '../../data/airdrops';
+import { absoluteUrl } from '../../data/site';
+import { formatDisplayDate } from '../../utils/date.js';
+import { buildAirdropPageContent } from '../../data/content-rewriter.js';
+
+export function getStaticPaths() {
+  return AIRDROPS.map((item) => ({ params: { slug: item.slug }, props: { item } }));
+}
+
+const { item } = Astro.props;
+const description = `${item.name} airdrop campaign snapshot: reward wording, chain, requirements, source page, and capture date.`;
+const noindex = item.quality !== 'ready';
+const related = AIRDROPS.filter((candidate) => candidate.slug !== item.slug && candidate.blockchain === item.blockchain).slice(0, 3);
+const capturedDate = formatDisplayDate(item.capturedAt);
+const comparisonRecord = related[0];
+const comparisonHref = comparisonRecord ? `/airdrop/${comparisonRecord.slug}/` : '/testnet/';
+const comparisonLabel = comparisonRecord ? `${comparisonRecord.name} campaign record` : 'testnet airdrop directory';
+const initials = item.name.replace(/[^a-zA-Z0-9 ]/g, '').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'AA';
+const pageContent = buildAirdropPageContent(item);
+const schema = {
+  '@context': 'https://schema.org', '@type': 'WebPage', name: `${item.name} Airdrop Campaign Snapshot`, description,
+  url: absoluteUrl(`/airdrop/${item.slug}/`), dateModified: item.capturedAt,
+  mainEntity: { '@type': 'HowTo', name: `How to participate in the ${item.name} airdrop`, step: pageContent.claimSteps.map((step, index) => ({ '@type': 'HowToStep', position: index + 1, name: step.title, text: step.details.join(' ') })) },
+  breadcrumb: { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: absoluteUrl('/') }, { '@type': 'ListItem', position: 2, name: 'Airdrops', item: absoluteUrl('/') }, { '@type': 'ListItem', position: 3, name: item.name, item: absoluteUrl(`/airdrop/${item.slug}/`) }] },
+};
+---
+<BaseLayout title={`${item.name} Airdrop Campaign Snapshot`} description={description} path={`/airdrop/${item.slug}/`} noindex={noindex}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)} />
+  <article class="detail-shell">
+    <div class="breadcrumbs"><a href="/">Crypto Airdrops</a> <span aria-hidden="true">/</span> {item.name}</div>
+    <header class="detail-header">
+      <div class="detail-heading"><span class="detail-logo-wrap">
+        {item.logoUrl && <img class="detail-logo" src={item.logoUrl} alt={`${item.name} logo`} decoding="async" referrerpolicy="no-referrer" onerror="this.hidden = true; this.nextElementSibling.hidden = false;" />}
+        <span class="logo-fallback" class:list={{ 'is-only': !item.logoUrl }} hidden={Boolean(item.logoUrl)}>{initials}</span>
+      </span><div><p class="eyebrow">SOURCE SNAPSHOT · {item.quality === 'ready' ? 'STRUCTURED RECORD' : 'NEEDS EDITORIAL REVIEW'}</p><h1>{item.name} Airdrop</h1><p>A factual directory entry for {item.name}. This page records what the imported listing says, then separates known campaign details from anything that still needs direct verification.</p></div></div>
+      <div class="detail-stamp"><strong>{item.blockchain}</strong><span>Captured {capturedDate} · source page {item.sourcePage}</span></div>
+    </header>
+    <div class="detail-grid">
+      <div>
+        <section class="content-block"><h2>Campaign snapshot</h2><p>{item.name} appears in the Open + Featured + Newest first source set. The reward language below is a record of the listing, not a guarantee that a token or cash reward will be paid.</p></section>
+        <section class="content-block project-background">
+          <h2>About {item.name}</h2>
+          {pageContent.about.map((paragraph) => <p>{paragraph}</p>)}
+          {pageContent.linkVariant === 0 && <p>Continue with the <a href="/guides/crypto-airdrop-safety-checklist/">crypto airdrop safety checklist</a>, then compare the evidence with the <a href={comparisonHref}>{comparisonLabel}</a>. An internal comparison is useful for research, but it does not imply shared ownership or risk.</p>}
+          {pageContent.linkVariant === 1 && <p>Use the <a href="/guides/crypto-airdrop-safety-checklist/">campaign safety checklist</a> before opening an external domain. The <a href={comparisonHref}>{comparisonLabel}</a> provides another local record for comparison without treating either entry as an endorsement.</p>}
+          {pageContent.linkVariant === 2 && <p>A separate <a href="/guides/crypto-airdrop-safety-checklist/">airdrop verification guide</a> covers domain and wallet checks. Readers can also review the <a href={comparisonHref}>{comparisonLabel}</a> to compare how similar records describe participation.</p>}
+          {pageContent.linkVariant === 3 && <p>Research should continue with the <a href="/guides/crypto-airdrop-safety-checklist/">wallet and domain checklist</a>. For a second point of reference, open the <a href={comparisonHref}>{comparisonLabel}</a> and compare requirements rather than headline rewards.</p>}
+        </section>
+        <section class="content-block"><h2>Reward language</h2><div class="facts">{item.values.map((value) => <div class="fact"><span>{value.amount}</span><strong>{value.approx || 'No additional detail in the source record.'}</strong></div>)}</div></section>
+        <section class="content-block"><h2>Participation signals</h2><div class="facts">{item.requirements.length ? item.requirements.map((req) => <div class="fact"><span>Listed requirement</span><strong>{formatRequirement(req)}</strong></div>) : <div class="fact"><span>Source record</span><strong>No participation requirement was listed.</strong></div>}<div class="fact"><span>Verification state</span><strong>{item.quality === 'ready' ? 'Structured source record; independently verify before acting.' : 'Needs editorial review before this record can be treated as complete.'}</strong></div></div></section>
+        <section class="content-block claim-guide">
+          <div class="block-heading"><p class="eyebrow">CAMPAIGN INSTRUCTIONS</p><h2>Step-by-step {item.name} airdrop guide</h2></div>
+          <p class="claim-intro">These steps summarize the campaign instructions captured from the source page. Terms can change, so open the campaign website and recheck eligibility, deadlines, costs, and regional restrictions before continuing.</p>
+          <ol class="claim-steps">
+            {pageContent.claimSteps.map((step, index) => <li>
+              <span class="claim-step-number">{String(index + 1).padStart(2, '0')}</span>
+              <div><h3>{step.title}</h3><ul>{step.details.map((detail) => <li>{detail}</li>)}</ul></div>
+            </li>)}
+          </ol>
+        </section>
+        <TrustNotice />
+        <section class="content-block"><h2>How to read this guide</h2><p>The steps above are a rewritten snapshot of the captured campaign instructions, not independent proof that every task or reward is still available. Use the campaign website to confirm eligibility, deadlines, KYC, gas costs, and supported wallets. Never sign a transaction you do not understand.</p></section>
+        <section class="content-block research-block">
+          <div class="block-heading"><p class="eyebrow">INTERNAL RESEARCH PATH</p><h2>Research {item.name} before acting</h2></div>
+          <div class="research-steps">
+            <a href="/guides/crypto-airdrop-safety-checklist/"><span>01</span><strong>Run the safety checklist</strong><small>Check the domain, wallet request, permissions, and total participation cost.</small></a>
+            <a href="/guides/how-to-read-a-crypto-airdrop-listing/"><span>02</span><strong>Read the listing as evidence</strong><small>Separate reward wording from requirements, deadlines, and unverified assumptions.</small></a>
+            <a href="/guides/testnet-airdrop-guide/"><span>03</span><strong>Use a testnet workflow</strong><small>Learn when to use a separate wallet and how to document early network tasks.</small></a>
+          </div>
+          <p class="research-more">Comparing early network campaigns? <a href="/testnet/">Browse all testnet airdrop records</a>.</p>
+        </section>
+        {related.length > 0 && <section class="content-block"><h2>More on {item.blockchain}</h2><div class="related-list">{related.map((entry) => <a class="related-item" href={`/airdrop/${entry.slug}/`}><span>{entry.name}</span><small>{entry.values[0]?.amount || 'Campaign snapshot'} ↗</small></a>)}</div></section>}
+      </div>
+      <aside class="source-panel">
+        <p class="eyebrow">EXTERNAL DESTINATION</p><h2>Campaign website</h2><p>Open the campaign destination captured with this record. Confirm the domain and current terms before connecting a wallet or funding an account.</p>
+        <ExternalLink href={item.campaignUrl} class="official-link">Visit campaign website <span aria-hidden="true">↗</span></ExternalLink>
+        {item.officialUrl && item.officialUrl !== item.campaignUrl && <ExternalLink href={item.officialUrl} class="project-site-link">Project website <span aria-hidden="true">↗</span></ExternalLink>}
+        <div class="source-audit"><h3>Official access</h3><p>Use the campaign destination recorded for this entry and verify its domain against the project&apos;s current official channels.</p><ExternalLink href={item.campaignUrl} class="source-link">Open official campaign <span aria-hidden="true">↗</span></ExternalLink></div>
+        <p class="source-note">All external links are marked nofollow. We do not ask for wallet connections, private keys, or seed phrases.</p>
+      </aside>
+    </div>
+  </article>
+</BaseLayout>

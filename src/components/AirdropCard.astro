@@ -1,0 +1,30 @@
+---
+import type { AirdropRecord } from '../data/airdrops';
+import { formatRequirement } from '../data/airdrops';
+import { formatDisplayDate } from '../utils/date.js';
+
+interface Props { item: AirdropRecord; index: number; }
+const { item, index } = Astro.props;
+const initials = item.name.replace(/[^a-zA-Z0-9 ]/g, '').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'AA';
+const primary = item.values[0];
+const secondary = item.values[1];
+const qualityLabel = item.quality === 'ready' ? 'Source snapshot' : 'Needs review';
+---
+<article class="airdrop-card">
+  <div class="card-topline"><span class="card-number">{String(index).padStart(2, '0')}</span><span class:list={['quality-chip', item.quality]}>{qualityLabel}</span></div>
+  <div class="card-heading">
+    <span class="project-logo-wrap">
+      {item.logoUrl && <img class="project-logo" src={item.logoUrl} alt={`${item.name} logo`} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden = true; this.nextElementSibling.hidden = false;" />}
+      <span class="logo-fallback" class:list={{ 'is-only': !item.logoUrl }} hidden={Boolean(item.logoUrl)}>{initials}</span>
+    </span>
+    <div><h2>{item.name}</h2><p>{item.blockchain} · captured {formatDisplayDate(item.capturedAt)}</p></div>
+  </div>
+  <div class="card-data">
+    <div><span>Reward snapshot</span><strong>{primary?.amount || 'Campaign record'}</strong><small>{primary?.approx || 'See source details'}</small></div>
+    <div><span>Participation</span><strong>{secondary?.amount || 'Requirements vary'}</strong><small>{secondary?.approx || 'Verify before acting'}</small></div>
+  </div>
+  <div class="card-footer">
+    <div class="requirement-list">{item.requirements.slice(0, 3).map((req) => <span>{formatRequirement(req)}</span>)}{item.requirements.length === 0 && <span>No listed requirement</span>}</div>
+    <a class="text-link" href={`/airdrop/${item.slug}/`}>View details <span aria-hidden="true">↗</span></a>
+  </div>
+</article>

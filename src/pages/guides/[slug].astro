@@ -1,0 +1,11 @@
+---
+import EditorialPage from '../../components/EditorialPage.astro';
+import { GUIDES } from '../../data/editorial';
+
+export function getStaticPaths() {
+  return GUIDES.map((article) => ({ params: { slug: article.slug }, props: { article } }));
+}
+
+const { article } = Astro.props;
+---
+<EditorialPage article={article} />

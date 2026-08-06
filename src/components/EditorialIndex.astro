@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EditorialCard from './EditorialCard.astro';
+import type { EditorialArticle } from '../data/editorial';
+import { absoluteUrl } from '../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  kicker: string;
+  heading: string;
+  intro: string;
+  articles: EditorialArticle[];
+}
+
+const { title, description, path, kicker, heading, intro, articles } = Astro.props;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: title,
+  description,
+  url: absoluteUrl(path),
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: articles.map((article, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: article.title,
+      url: absoluteUrl(`/${article.kind === 'guide' ? 'guides' : 'news'}/${article.slug}/`),
+    })),
+  },
+};
+---
+<BaseLayout title={title} description={description} path={path}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)} />
+  <section class="editorial-index-hero">
+    <div><p class="eyebrow">{kicker}</p><h1>{heading}</h1><p>{intro}</p></div>
+    <nav class="editorial-jump" aria-label="Editorial sections"><a href="/guides/">Guides</a><a href="/news/">News</a><a href="/testnet/">Testnet records</a></nav>
+  </section>
+  <section class="editorial-index-grid" aria-label={heading}>{articles.map((article) => <EditorialCard article={article} />)}</section>
+</BaseLayout>

@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AirdropCard from '../components/AirdropCard.astro';
+import EditorialCard from '../components/EditorialCard.astro';
+import { AIRDROPS } from '../data/airdrops';
+import { GUIDES, NEWS } from '../data/editorial';
+import { absoluteUrl } from '../data/site';
+
+const items = AIRDROPS.filter((item) => item.blockchain === 'Testnet');
+const reading = [...GUIDES.filter((article) => article.slug === 'testnet-airdrop-guide'), ...NEWS.filter((article) => article.slug === 'testnet-airdrop-watch')];
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Testnet Airdrops',
+  description: 'Testnet campaign records with dated reward wording, requirements, source trails, and research guides.',
+  url: absoluteUrl('/testnet/'),
+  mainEntity: { '@type': 'ItemList', itemListElement: items.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, url: absoluteUrl(`/airdrop/${item.slug}/`) })) },
+};
+---
+<BaseLayout title="Testnet Airdrops" description="Browse testnet airdrop campaign records with dated reward wording, participation signals, source trails, and safety guidance." path="/testnet/">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)} />
+  <section class="category-hero"><div><p class="eyebrow">CATEGORY / TESTNET</p><h1>Testnet airdrops to research, not promises to chase.</h1><p>These {items.length} records use the Testnet chain label in the current source snapshot. Verify documentation, faucets, wallet support, and reward terms before completing a task.</p></div><nav class="editorial-jump" aria-label="Related sections"><a href="/">All airdrops</a><a href="/guides/testnet-airdrop-guide/">Testnet guide</a><a href="/news/testnet-airdrop-watch/">Latest testnet watch</a></nav></section>
+  <section><div class="section-heading"><div><p class="eyebrow">TESTNET RECORDS / {String(items.length).padStart(2, '0')}</p><h2>Browse the current testnet set</h2></div><p>A Testnet label describes the source record. It does not confirm a future token or allocation.</p></div><div class="airdrop-grid">{items.map((item, index) => <AirdropCard item={item} index={index + 1} />)}</div></section>
+  <section class="reading-band"><div class="section-heading"><div><p class="eyebrow">RESEARCH BEFORE ACTING</p><h2>Testnet reading</h2></div></div><div class="editorial-card-grid">{reading.map((article) => <EditorialCard article={article} />)}</div></section>
+</BaseLayout>

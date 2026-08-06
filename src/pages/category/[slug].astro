@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AirdropCard from '../../components/AirdropCard.astro';
+import { AIRDROP_CATEGORIES, getAirdropsForCategory } from '../../data/categories';
+import { absoluteUrl } from '../../data/site';
+
+export function getStaticPaths() {
+  return AIRDROP_CATEGORIES.map((category) => ({ params: { slug: category.slug }, props: { category } }));
+}
+
+const { category } = Astro.props;
+const items = getAirdropsForCategory(category.slug);
+const path = `/category/${category.slug}/`;
+const title = `${category.name} Airdrops`;
+const description = `Browse ${category.name} airdrop records with captured reward language, participation requirements, project links, and verification guidance.`;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: `${category.name} airdrop records`,
+  numberOfItems: items.length,
+  url: absoluteUrl(path),
+  itemListElement: items.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    url: absoluteUrl(`/airdrop/${item.slug}/`),
+  })),
+};
+---
+<BaseLayout title={title} description={description} path={path}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)} />
+  <section class="category-hero topic-category-hero">
+    <div>
+      <p class="eyebrow">CATEGORY / {category.name.toUpperCase()}</p>
+      <h1>{category.name} airdrop records.</h1>
+      <p>{category.pageIntro}</p>
+    </div>
+    <div class="category-total" style={`--category-accent: ${category.accent}`}><span class="category-swatch" aria-hidden="true"></span><strong>{items.length}</strong><small>matching records</small></div>
+  </section>
+  <section>
+    <div class="section-heading">
+      <div><p class="eyebrow">CURRENT SET / {String(items.length).padStart(2, '0')}</p><h2>Browse {category.name} campaigns</h2></div>
+      <p>Category membership organizes existing evidence. It is not an endorsement, safety rating, or promise of a future reward.</p>
+    </div>
+    <div class="airdrop-grid">{items.map((item, index) => <AirdropCard item={item} index={index + 1} />)}</div>
+    <nav class="editorial-jump category-footer-links" aria-label="Related category links"><a href="/categories/">All categories</a><a href="/guides/crypto-airdrop-safety-checklist/">Safety checklist</a><a href="/">Full directory</a></nav>
+  </section>
+</BaseLayout>

@@ -1,0 +1,27 @@
+---
+import { AIRDROP_CATEGORIES } from '../data/categories';
+---
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="Top Crypto Airdrops home">
+      <span class="brand-mark" aria-hidden="true">+</span>
+      <span><strong>Top Crypto</strong><small>AIRDROPS / FIELD NOTES</small></span>
+    </a>
+    <nav class="main-nav" aria-label="Primary navigation">
+      <a href="/">Browse</a>
+      <details class="category-menu">
+        <summary>Categories</summary>
+        <div class="category-menu-panel">
+          <a class="category-menu-all" href="/categories/"><strong>All categories</strong><small>Browse the complete topic index</small></a>
+          {AIRDROP_CATEGORIES.map((category) => <a href={`/category/${category.slug}/`} style={`--category-accent: ${category.accent}`}>
+            <span class="category-swatch" aria-hidden="true"></span><span><strong>{category.name}</strong><small>{category.description}</small></span>
+          </a>)}
+        </div>
+      </details>
+      <a href="/guides/">Guides</a>
+      <a href="/news/">News</a>
+      <a href="/testnet/">Testnet</a>
+      <a href="/about/">About</a>
+    </nav>
+  </div>
+</header>

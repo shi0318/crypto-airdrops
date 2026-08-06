@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+interface Props { title: string; description: string; kicker?: string; path: string; }
+const { title, description, kicker = 'SITE INFORMATION', path } = Astro.props;
+---
+<BaseLayout title={title} description={description} path={path}>
+  <article class="legal-shell"><p class="eyebrow">{kicker}</p><h1>{title}</h1><slot /></article>
+</BaseLayout>
