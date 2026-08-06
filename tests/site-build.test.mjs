@@ -108,6 +108,15 @@ test('outbound links carry the nofollow policy', () => {
   assert.match(html, /Never share your private key or seed phrase/);
 });
 
+test('prominent safety notices link to the disclaimer and terms', () => {
+  const homepage = read('index.html');
+  const detail = read('airdrop/bitunix-trading-rewards/index.html');
+
+  assert.match(homepage, /class="trust-notice"(?:(?!<\/aside>)[\s\S])*href="\/disclaimer\/"/);
+  assert.match(detail, /class="source-note"(?:(?!<\/p>)[\s\S])*href="\/disclaimer\/"/);
+  assert.match(detail, /class="source-note"(?:(?!<\/p>)[\s\S])*href="\/terms\/"/);
+});
+
 test('homepage footer identifies cryptvews.com as the site owner', () => {
   const html = read('index.html');
 
